@@ -2,20 +2,33 @@ global _start
 extern printf, scanf
 
 section .data
-	message db "Fibonacci Sequence:", 0x0a
-	outFmt db "%d",0x0a,0x00; newline and null terminator at the end
+	message db "Please Enter the number of fibonacci numbers to print: ", 0x0a
+	msgLength equ $-message
+	outFmt db "%hd",0x0a,0x00; newline and null terminator at the end
+	inFmt db "%hd",0x00
+section .bss 
+	userIn resb 1
+
 section .text
 _start:
 	call printMessage
+	call getInput
 	call initFib
 	call loopFib ; calculate sequence
 	call Exit ;exit
+getInput:
+	mov rdi,inFmt
+	mov rsi, userIn
+	sub rsp, 8
+	call scanf
+	add rsp, 8
+	ret 
 
 printMessage:
 	mov rax, 1  ; syscall write
 	mov rdi, 1 ; stdout
 	mov rsi,message; the message pointer
-	mov rdx, 20; length
+	mov rdx, msgLength; length
 	syscall
 	ret
 
@@ -23,7 +36,7 @@ initFib:
 	xor rax,rax ; initialize to 0
 	xor rbx,rbx ; initialize to 0
 	inc rbx     ; increment by 1
-	mov rcx, 10 ; loop counter 
+	mov rcx, [userIn] ; loop counter  using user input 
 	ret
 	
 loopFib:
@@ -36,7 +49,7 @@ loopFib:
 	dec rcx
 	jnz loopFib ; loop loopFib
 	ret
-
+	
 printFib:
 
 	push rax;push registers to stack
